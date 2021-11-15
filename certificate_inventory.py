@@ -95,7 +95,6 @@ def dnsname(ip):
 
 if __name__ == "__main__":
     cmd ="echo -n| openssl s_client -connect %s:%s 2>/dev/null | openssl x509 -noout -subject -issuer -enddate -startdate -fingerprint"
-    #subnets = ['140.107.42.0/23','140.107.88.0/23','140.107.134.0/23','140.107.116.0/23','140.107.80.0/24','140.107.52.0/23',140.107.170.0/23, 140.107.50.0/23]
 
     configfile = 'config.ini'
     if not os.path.exists(configfile):
