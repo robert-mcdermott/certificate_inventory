@@ -11,7 +11,7 @@ A script that interrogates the provided CIDR network ranges, finds HTTPS web ser
 - The expiration data of the certificate
 - The unique fingerprint of the certificate   
 
-This is a quick hackish was to do this and needs a lot of improvements
+This is a quick hackish way to do this and needs a lot of improvements
 
 ## Requirements
 
