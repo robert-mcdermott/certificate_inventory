@@ -16,6 +16,7 @@ Long Description:   A script that interrogates the provided CIDR network ranges,
                     This is a quick hackish was to do this and needs a lot of improvements
 """
 import configparser
+import datetime
 import ipaddress
 import os
 import random
@@ -25,7 +26,7 @@ import ssl
 import urllib.request
 
 def main():
-    print("IP:port, DNS Hostname, Certificate Name, Issuer, Start Date, Expiration Date, Fingerprint")
+    print("IP:port, DNS Hostname, Certificate Name, Issuer, Start Date, Expiration Date, Days Until Expiration, Expired, Fingerprint")
     ips = allips(subnets)
     random.shuffle(ips)
     for ip in ips:
@@ -34,21 +35,50 @@ def main():
                 print(getcertinfo(ip, port))
                 sys.stdout.flush()
 
+
 def getcertinfo(ip, port):
     """Takes an IP and port number and returns information about the certificate and host. The 
     parsing of the fields is an attempt to just get the basic information as some certificates
     have some very verbose infomation that is not useful for a report of this type. This hackish
     parsing should be replaced with some more elegant regular expressions.
     """
+    # run the openssl commandline utility and return the results
     out = os.popen(cmd % (ip, port)).readlines()
+    
+    # there is com variation about spacing after CN ('CN=' and 'CN ='), standardize it
     out = [x.replace(" =", "=") for x in out]
+
+    # Get the certificate name 
     cert = out[0].split("CN=")[-1].split("/")[0].split(',')[0].strip().lower()
+    
+    # Get the CA that issued the certificate
     issuer = out[1].split("CN=")[-1].split(",")[0].split("/")[0].strip()
-    expire = out[2].split("=")[-1].strip()
-    start = out[3].split("=")[-1].strip()
+    
+    # Get expiration date info
+    expire_date_str = out[2].split("=")[-1].strip()
+    expire_date = datetime.datetime.strptime(expire_date_str, '%b %d %H:%M:%S %Y %Z') 
+    expire_delta_days = (expire_date - now).days
+    expired = expire_date <= now  # is it expired? True or False
+    expire_date_short = expire_date.strftime("%Y-%m-%d")
+    
+    # Get issued date info
+    start_date_str = out[3].split("=")[-1].strip()
+    start_date = datetime.datetime.strptime(start_date_str, '%b %d %H:%M:%S %Y %Z')
+    start_date_short = start_date.strftime("%Y-%m-%d")
+    
+    # Unique certifcat signature
     fingerprint = out[4].split("=")[-1].strip()
+    
+    # Reversse lookup of the IP address in DNS 
     hostname = dnsname(ip)
-    return "%s, %s, %s, %s, %s, %s, %s" % (ip, hostname, cert, issuer, start, expire, fingerprint)
+    return "%s, %s, %s, %s, %s, %s, %s, %s, %s" % (ip, hostname, cert, issuer, start_date_short, expire_date_short, expire_delta_days, expired, fingerprint)
+
+
+#now = datetime.datetime.now()
+#expire_date = "Mar 26 00:00:00 2018 GMT"
+#expire_date_dt = datetime.datetime.strptime(expire_date, '%b %d %H:%M:%S %Y %Z')
+#expire_date_short = expire_date_dt.strftime("%Y-%m-%d")
+#age = (expire_date_dt - now).days
 
 def isalive(ip, port):
     """Takes and IP address and port and returns True if an HTTPS web server is located at that
@@ -95,7 +125,8 @@ def dnsname(ip):
 
 if __name__ == "__main__":
     cmd ="echo -n| openssl s_client -connect %s:%s 2>/dev/null | openssl x509 -noout -subject -issuer -enddate -startdate -fingerprint"
-
+    now = datetime.datetime.now()
+    
     configfile = 'config.ini'
     if not os.path.exists(configfile):
         print("Error: configuration file '%s' missing\n" % configfile)
