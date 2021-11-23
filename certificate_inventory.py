@@ -11,6 +11,8 @@ Long Description:   A script that interrogates the provided CIDR network ranges,
                       - The issuer of the certificate
                       - The start date of the certificate
                       - The expiration data of the certificate
+                      - Number of days util/past expiration
+                      - Expired boolean - True or False
                       - The unique fingerprint of the certificate
                     
                     This is a quick hackish was to do this and needs a lot of improvements
