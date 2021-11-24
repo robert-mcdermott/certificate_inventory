@@ -73,14 +73,14 @@ def getcertinfo(ip, port):
     
     # Reversse lookup of the IP address in DNS 
     hostname = dnsname(ip)
-    return "%s, %s, %s, %s, %s, %s, %s, %s, %s" % (ip, hostname, cert, issuer, start_date_short, expire_date_short, expire_delta_days, expired, fingerprint)
+    return "%s:%s, %s, %s, %s, %s, %s, %s, %s, %s" % (ip, port, hostname, cert, issuer, start_date_short, expire_date_short, expire_delta_days, expired, fingerprint)
 
 
-#now = datetime.datetime.now()
-#expire_date = "Mar 26 00:00:00 2018 GMT"
-#expire_date_dt = datetime.datetime.strptime(expire_date, '%b %d %H:%M:%S %Y %Z')
-#expire_date_short = expire_date_dt.strftime("%Y-%m-%d")
-#age = (expire_date_dt - now).days
+now = datetime.datetime.now()
+expire_date = "Mar 26 00:00:00 2018 GMT"
+expire_date_dt = datetime.datetime.strptime(expire_date, '%b %d %H:%M:%S %Y %Z')
+expire_date_short = expire_date_dt.strftime("%Y-%m-%d")
+age = (expire_date_dt - now).days
 
 def isalive(ip, port):
     """Takes and IP address and port and returns True if an HTTPS web server is located at that
